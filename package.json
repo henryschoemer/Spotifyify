@@ -1,0 +1,16 @@
+{
+  "name": "apple-to-spotify",
+  "version": "1.0.0",
+  "description": "turn apple playlist into spotify playlist",
+  "main": "apple-to-spotify.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "henry-schoemer",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "path": "^0.12.7",
+    "spotify-web-api-node": "^5.0.2"
+  }
+}
