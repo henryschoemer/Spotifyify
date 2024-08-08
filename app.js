@@ -30,9 +30,7 @@ const port = 3000;
 
 // function to take in an apple playlist and return an array of objects containing the song title + artist
 
-const readPlaylist = async() => {
-    const applePlaylist = "https://music.apple.com/us/playlist/2023-essentials/pl.u-6mo4je8UKvbBD1";
-
+const readPlaylist = async(applePlaylist) => {
     try {
         const browser = await puppeteer.launch({headless: "new", args: ['--no-sandbox']});
         const page = await browser.newPage();
@@ -95,48 +93,73 @@ const readPlaylist = async() => {
     }
 }
 
-app.get('/', function(req,res) {
-    res.redirect("http://localhost:3000/authorize");
-})
+const convertPlaylist = async() => {
 
-app.get('/home', function(req,res) {
-    res.sendFile(path.join(__dirname,'public', 'index.html'));
+    var data =  await spotifyApi.createPlaylist('test for SpotifyIfy', {'public': true});
 
-    async function convertPlaylist() {
-        var playlist_id = "2ur7sr4DGc1baXNuZ5VSRM";
-        spotifyApi.createPlaylist('test for SpotifyIfy', {'public': true})
+    console.log("created playlist: ", data.body.uri);
+    parts = data.body.uri.split(":");
+    playlist_id = parts[parts.length - 1];
+
+    return playlist_id;
+
+}
+
+const getSongURIs = async(applePlaylist) => {
+
+    const song_uris = [];
+
+    const playlist_contents = await readPlaylist(applePlaylist);
+
+    console.log("playlist_contents: ", playlist_contents, playlist_contents.length, " items");
+
+    for (let i = 0; i < Math.floor(playlist_contents.length / 99) + 1; i++) {
+        let list = []
+        song_uris.push(list);
+    }
+
+    console.log("song_uris: ", song_uris);
+
+    for (let index = 0; index < playlist_contents.length; index++) {
+        try {
+            let data = await spotifyApi.searchTracks(`track:${playlist_contents[index].title} artist:${playlist_contents[index].artist}`);
+
+            console.log(`${index}: ${data.body.tracks.items[0].uri}: ${playlist_contents[index].title} by ${playlist_contents[index].artist}`);
+
+            song_uris[Math.floor(index / 99)].push(data.body.tracks.items[0].uri);
+            console.log(index);
+        }
+        catch (err) {
+            console.log(`${playlist_contents[index].title} could not be added as it was not found on spotify`);
+            continue;
+        }
+    }
+
+    return song_uris;
+
+}
+
+const addSongs = async(applePlaylist) => {
+
+    const playlist_id = await convertPlaylist();
+
+    const song_uris = await getSongURIs(applePlaylist);
+
+    console.log("playlist_id: ", playlist_id);
+
+    for (let i = 0; i < song_uris.length; i++) {
+        spotifyApi.addTracksToPlaylist(playlist_id, song_uris[i])
          .then(function(data) {
-            console.log("created playlist: ", data.uri);
-         }, function(error) {
-            console.log("error creating playlist:", error);
-         });
-
-        await readPlaylist()
-         .then(playlist_contents => {
-            for (let index = 0; index < playlist_contents.length; index++) {
-                spotifyApi.searchTracks(`track:${playlist_contents[index].title} artist:${playlist_contents[index].artist}`)
-                 .then(function(data) {
-                    console.log(`${data.body.tracks.items[0].uri}: ${playlist_contents[index].title} by ${playlist_contents[index].artist}`);
-
-                    const uri = [];
-                    uri.push(data.body.tracks.items[0].uri);
-
-                    spotifyApi.addTracksToPlaylist(playlist_id, uri)
-                     .then(function(data) {
-                        console.log(`added ${playlist_contents[index].title} by ${playlist_contents[index].artist} to playlist`);
-                     }, function(error) {
-                        console.log(`couldn't add ${playlist_contents[index].title} by ${playlist_contents[index].artist} to playlist because:`, error);
-                     });
-
-                 }, function(error) {
-                    console.log(error);
-                 });
-
-            }
+            console.log(`added songs to playlist, no error`);
+        }, function(error) {
+            console.log(`couldn't add songs to playlist because:`, error);
         });
     }
 
-    convertPlaylist();
+}
+
+app.get('/', function(req,res) {
+    res.redirect("http://localhost:3000/authorize");
 })
 
 app.get('/authorize', function(req, res) {
@@ -184,9 +207,19 @@ app.get('/callback', function(req, res) {
         console.error("error getting authorization:", err);
         res.send(`Error: ${err}`);
     });
-
 })
 
+app.get('/home', function(req, res) {
+    res.sendFile(path.join(__dirname,'public', 'index.html'));
+})
+
+app.get('/submit', function(req, res) {
+    let playlist = req.query.playlist_input;
+
+    addSongs(playlist);
+
+    res.sendFile(path.join(__dirname,'public', 'submit.html'));
+})
 
 app.listen(port, function(err) {
     if (err) {
