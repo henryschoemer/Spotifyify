@@ -12,11 +12,19 @@ https://youtu.be/O-J155VwK7w
 My name is Henry Schoemer, you can find me at any of the contacts below:
 
 School email (will be nonexistent in May 2026): 
+
 > henry.schoemer@temple.edu
+
 Personal email:
+
 > henryjschoemer@gmail.com
+
 Phone number:
+
 > 518-526-5333
+
 Location:
+
 > Philadelphia and Fairfax, VA
+
 **mwah**
