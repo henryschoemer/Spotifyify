@@ -1,5 +1,5 @@
 # Spotifyify
-A node web application capable of automatically migrating an Apple Music playlist to Spotify.
+**A node web application capable of automatically migrating an Apple Music playlist to Spotify.**
 
 Since as long as I can remember my brother has used Apple Music, which is by no means dramatically more expensive than Spotify, but a few bucks is a few bucks. He incessantly complained (maybe said something to me once or twice) about how no one he knows uses Apple Music, he spends more money for only a slightly better product, and he can't do anything about it because it would take so long to recreate all his playlists. My ears required assistance, so I made him this app to stop his whining. Please don't judge the aesthetic, this was a project with a utilitarian purpose :)
 
